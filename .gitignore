@@ -1,7 +1,7 @@
-Downloads/*
-!Downloads/.gitkeep
-Screenshots/*
-!Screenshots/.gitkeep
 __pycache__/
-*.pyc
+*.py[cod]
+.env
+
+*.log
 .venv/
+venv/

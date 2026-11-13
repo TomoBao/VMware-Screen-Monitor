@@ -1,7 +1,45 @@
+# Python cache
 __pycache__/
 *.py[cod]
-.env
+*$py.class
 
-*.log
+# Virtual environments
 .venv/
 venv/
+env/
+
+# Private configuration and credentials
+config.py
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Downloaded files
+Downloads/*
+!Downloads/.gitkeep
+
+# Captured screenshots
+Screenshots/*
+!Screenshots/.gitkeep
+
+# Temporary files
+*.tmp
+*.part
+*.bak
+*.old
+
+# IDE settings
+.vscode/
+.idea/
+
+# Windows files
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS files
+.DS_Store

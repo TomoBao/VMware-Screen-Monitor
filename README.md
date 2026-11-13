@@ -1,10 +1,10 @@
 # VMware Screen Monitor
 
 <div align="center">
-  <img src="assets/banner.png" alt="VMware Screen Monitor Banner" width="100%">
-  
-  **A Python-powered Discord bot for monitoring your Windows VMware lab.**
-  
+  <img src="assets/banner.png" alt="VMware Screen Monitor" width="100%">
+
+  **A Python-powered Discord bot for monitoring a Windows VMware lab.**
+
   ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
   ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows)
   ![Discord](https://img.shields.io/badge/Discord-Bot-5865F2?logo=discord)
@@ -13,22 +13,22 @@
 
 ---
 
-## About
+## Overview
 
-VMware Screen Monitor is a Python Discord bot designed for monitoring and managing a Windows virtual machine in a personal VMware lab.
+VMware Screen Monitor is a Python project that connects a Windows virtual machine to a Discord bot.
 
-It connects your Windows VM to a Discord server and provides useful diagnostic information through slash commands.
+It provides system information, predefined diagnostic commands, file downloads, and a locally confirmed screenshot workflow.
+
+Designed for personal VMware labs and authorized testing environments.
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| VM Monitoring | View CPU, RAM, disk, and system information |
-| Diagnostic Commands | Run predefined Windows diagnostic commands |
-| File Downloads | Download small files from public HTTPS URLs |
-| Screenshot Workflow | Capture and upload screenshots after local confirmation |
-| Voice Connection | Connect or disconnect the bot from a Discord voice channel |
-| Webhook Notifications | Send bot status notifications to Discord |
+- **System Monitoring** — View CPU, RAM, disk, and system information.
+- **Diagnostic Commands** — Run predefined Windows diagnostic commands.
+- **File Downloads** — Download files from HTTPS URLs with basic restrictions.
+- **Screenshot Workflow** — Capture and upload a screenshot after local confirmation.
+- **Voice Connection** — Connect or disconnect the bot from a Discord voice channel.
+- **Webhook Notifications** — Send bot status notifications through Discord webhooks.
 
 ## Commands
 
@@ -38,15 +38,15 @@ It connects your Windows VM to a Discord server and provides useful diagnostic i
 | `/runcmd` | Run a predefined diagnostic command |
 | `/download` | Download a file from an HTTPS URL |
 | `/ss` | Request a locally confirmed screenshot |
-| `/share` | Connect the bot to your current voice channel |
-| `/leave` | Disconnect the bot from voice |
+| `/share` | Connect to your current voice channel |
+| `/leave` | Disconnect from voice |
 
 ## Requirements
 
 - Windows 10 or later
-- VMware Workstation or another compatible VMware environment
+- VMware Workstation or compatible virtualization software
 - Python 3.10 or later
-- A Discord account and Discord bot application
+- Discord bot application
 - Internet connection
 
 ## Installation
@@ -54,7 +54,7 @@ It connects your Windows VM to a Discord server and provides useful diagnostic i
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/TomoBao/VMware-Screen-Monitor.git
 cd VMware-Screen-Monitor
 ```
 
@@ -66,16 +66,16 @@ python -m pip install -r requirements.txt
 
 ### 3. Configure the bot
 
-Copy `config.example.py` and rename the copy to `config.py`.
+Create a local `config.py` using `config.example.py` as a template.
 
-Fill in your own:
+Configure your own:
 
 - Discord bot token
 - Discord webhook URL
 - Discord server ID
 - Control channel ID
 
-**Never publish your real credentials on GitHub.**
+**Never upload real credentials to GitHub.**
 
 ### 4. Start the bot
 
@@ -83,18 +83,21 @@ Fill in your own:
 python bot.py
 ```
 
-If everything is configured correctly, the bot should connect to Discord and synchronize its slash commands.
+The bot should connect to Discord and synchronize its slash commands.
 
 ## Screenshot Workflow
 
-The `/ss` command sends a screenshot request.
+The screenshot workflow requires local confirmation.
 
-To capture a screenshot:
+1. Run the screenshot program inside your Windows VM:
 
-1. Run `python screenmonitor.py` inside the Windows VM.
+   ```bash
+   python ScreenMonitor.py
+   ```
+
 2. Review the local confirmation prompt.
-3. Type `YES` to authorize one screenshot.
-4. The screenshot is saved in `Screenshots/` and uploaded to the configured webhook.
+3. Type `YES` to authorize the capture.
+4. The screenshot is saved locally and uploaded to the configured webhook.
 
 Screenshots are not captured silently or continuously.
 
@@ -106,47 +109,42 @@ VMware-Screen-Monitor/
 ├── assets/
 │   └── banner.png
 │
-├── Downloads/
-│   └── .gitkeep
-│
-├── Screenshots/
-│   └── .gitkeep
-│
 ├── bot.py
-├── config.py
+├── ScreenMonitor.py
 ├── config.example.py
 ├── local_shell.py
 ├── monitor.py
-├── screenmonitor.py
-│
 ├── requirements.txt
 ├── README.md
 ├── .gitignore
 └── LICENSE
 ```
 
+The `Downloads/` and `Screenshots/` directories are used for local project data when created by the application.
+
 ## Security
 
-- Keep Discord tokens and webhook URLs private.
-- Remote diagnostic commands are restricted to predefined commands.
+- Keep bot tokens and webhook URLs private.
+- Use the bot only on systems you own or are authorized to monitor.
+- Diagnostic commands are restricted to predefined operations.
 - Screenshot uploads require local confirmation.
 - Downloaded files are not automatically executed.
-- Do not use this project to monitor devices without authorization.
+- Download restrictions are basic safeguards, not a guarantee that files are safe.
 
 ## Limitations
 
-- `/share` connects the bot to a voice channel; it does not automatically start Discord Go Live.
-- `/ss` requires local execution and confirmation inside the VM.
-- Download restrictions are basic safeguards, not a guarantee against malicious files.
+- `/share` connects the bot to voice; it does not automatically start Discord Go Live.
+- `/ss` requires local execution and confirmation.
+- Download restrictions should not be treated as a hardened security boundary.
 
 ## Contributing
 
-Contributions, bug reports, and suggestions are welcome!
+Suggestions, bug reports, and improvements are welcome!
 
 1. Fork this repository.
 2. Create a feature branch.
-3. Commit your changes.
-4. Open a Pull Request.
+3. Make your changes.
+4. Submit a Pull Request.
 
 ## License
 
@@ -159,5 +157,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 **VMware Screen Monitor**
 
 Made with Python and Discord.py.
+
+[Repository](https://github.com/TomoBao/VMware-Screen-Monitor)
 
 </div>

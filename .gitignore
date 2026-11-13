@@ -1,10 +1,7 @@
+Downloads/*
+!Downloads/.gitkeep
+Screenshots/*
+!Screenshots/.gitkeep
 __pycache__/
-*.py[cod]
-.env
-
-Screenshots/
-Downloads/
-
-*.log
+*.pyc
 .venv/
-venv/

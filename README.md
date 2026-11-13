@@ -20,7 +20,7 @@ A Python Discord bot for a Windows VMware monitoring lab.
 ## Installation
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/TomoBao/VMware-Screen-Monitor.git
 cd VMware-Screen-Monitor
 python -m pip install -r requirements.txt
 ```

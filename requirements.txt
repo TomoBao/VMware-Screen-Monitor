@@ -1,0 +1,5 @@
+discord.py
+discord.py[voice]
+requests
+Pillow
+psutil

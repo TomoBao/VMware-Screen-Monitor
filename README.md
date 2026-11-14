@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python">
   <img src="https://img.shields.io/badge/Platform-Windows-blue?logo=windows" alt="Windows">
   <img src="https://img.shields.io/badge/Discord-Bot-5865F2?logo=discord" alt="Discord">
+  <img src="https://img.shields.io/badge/Version-v1.0.2-orange" alt="Version">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
 </p>
 
@@ -19,9 +20,9 @@
 
 ## About
 
-**VMware Screen Monitor** is an open-source Python project designed for monitoring and performing authorized diagnostic operations in Windows VMware lab environments through Discord.
+**VMware Screen Monitor** is an open-source Python project designed to monitor and perform authorized diagnostic operations on Windows VMware virtual machines through Discord.
 
-The project uses a Discord bot as an interface for interacting with your configured Windows lab machine.
+The project provides a Discord bot interface for accessing system information and supported monitoring features on your configured Windows VM.
 
 **Default project directory:**
 
@@ -43,31 +44,42 @@ C:\VMLab
 
 - Discord bot integration
 - Windows system monitoring
-- System status reporting
-- Diagnostic command interface
-- Screenshot workflow with local confirmation
-- HTTPS file downloads
+- CPU, RAM, and disk usage reporting
+- Predefined diagnostic commands
+- Screenshot capture with local confirmation
+- HTTPS file downloading
 - Discord voice channel connection
-- Webhook notifications
+- Optional webhook notifications
 
 ## Discord Commands
 
 | Command | Description |
 |---|---|
-| `/status` | Display system status |
+| `/status` | Display Windows system status |
 | `/runcmd` | Run supported diagnostic commands |
-| `/ss` | Start the screenshot workflow |
-| `/download` | Download a file from an HTTPS URL |
-| `/share` | Connect the bot to a voice channel |
+| `/ss` | Request the local screenshot workflow |
+| `/download` | Download a supported file from an HTTPS URL |
+| `/share` | Connect the bot to a Discord voice channel |
 | `/leave` | Disconnect the bot from a voice channel |
 
-Command availability depends on the installed version and configuration.
+### Supported Diagnostic Commands
+
+The `/runcmd` command supports:
+
+- `hostname`
+- `whoami`
+- `ipconfig`
+- `tasklist`
+- `systeminfo`
+- `dir`
+
+**Note:** `/share` connects the bot to voice chat. It does not provide desktop screen sharing.
 
 ## Requirements
 
 - Windows 10 or later
 - Python 3.10+
-- VMware Workstation or compatible VMware environment
+- VMware Workstation or a compatible VMware environment
 - Git
 - Discord account
 - Discord bot application
@@ -91,21 +103,27 @@ cd C:\VMLab
 ### 3. Install Python dependencies
 
 ```powershell
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
 ### 4. Configure the project
 
-Create your local `config.py` using the example configuration.
+Create your local `config.py` using the example configuration:
 
-Configure the required settings:
+```powershell
+Copy-Item config.example.py config.py
+```
+
+Configure the required settings in `config.py`:
 
 - Discord bot token
-- Webhook URL
 - Discord server ID
 - Control channel ID
+- Webhook URL, if required by your enabled features
+- Other settings required by your installed version
 
-Never publish your actual credentials.
+**Never publish your actual credentials.**
 
 ### 5. Start the bot
 
@@ -116,6 +134,8 @@ Run:
 ```powershell
 python bot.py
 ```
+
+The bot should connect to Discord and register its server slash commands.
 
 ## Project Structure
 
@@ -129,8 +149,10 @@ C:\VMLab
 │
 ├── Downloads/
 ├── Screenshots/
+├── logs/
 │
 ├── bot.py
+├── config.example.py
 ├── config.py
 ├── local_shell.py
 ├── monitor.py
@@ -153,18 +175,22 @@ Keep the following information private:
 - Private server and channel IDs
 - Other credentials
 
-For public GitHub distribution, use a sanitized example configuration instead of uploading your private configuration.
+For public GitHub distribution, include a sanitized `config.example.py` instead of your private `config.py`.
+
+The `.gitignore` file should exclude private configuration, credentials, logs, and generated files.
 
 ## Security
 
 This project is intended for authorized Windows VMware lab environments.
 
 - Only monitor machines you own or have permission to access.
-- Restrict diagnostic commands to supported operations.
+- Keep diagnostic commands restricted to supported operations.
 - Require visible local confirmation before screenshot capture.
-- Do not automatically execute downloaded files.
+- Review downloaded files before opening them.
+- Never automatically execute downloaded files.
 - Protect Discord tokens and webhook URLs.
 - Avoid publishing private information in screenshots or logs.
+- Keep your Discord server access restricted to trusted users.
 
 ## Contributing
 
@@ -173,9 +199,11 @@ Contributions are welcome!
 You can help improve VMware Screen Monitor by:
 
 - Reporting bugs through GitHub Issues.
-- Suggesting improvements.
+- Suggesting new features.
 - Submitting pull requests.
 - Improving documentation.
+
+Please do not include credentials or private information in public issues.
 
 ## License
 

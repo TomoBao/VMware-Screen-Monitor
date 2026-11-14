@@ -5,39 +5,47 @@
 </p>
 
 <p align="center">
-  A Python-based Discord monitoring bot for Windows VMware lab environments.
+  **A Python-based Discord monitoring project for Windows VMware environments.**
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/Platform-Windows-blue?logo=windows">
-  <img src="https://img.shields.io/badge/Integration-Discord-5865F2?logo=discord">
-  <img src="https://img.shields.io/badge/Project-Open%20Source-success">
+  <img src="https://img.shields.io/badge/Platform-Windows-blue?logo=windows" alt="Windows">
+  <img src="https://img.shields.io/badge/Discord-Bot-5865F2?logo=discord" alt="Discord">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
 </p>
 
-## Overview
+---
 
-**VMware Screen Monitor** is a Python project designed to monitor and interact with a Windows virtual machine through a Discord bot.
+## About
 
-It provides a central Discord interface for authorized lab monitoring, diagnostic operations, and screenshot workflows.
+**VMware Screen Monitor** is an open-source Python project designed for monitoring and performing authorized diagnostic operations in Windows VMware lab environments through Discord.
+
+The project uses a Discord bot as an interface for interacting with your configured Windows lab machine.
+
+**Default project directory:**
+
+```text
+C:\VMLab
+```
 
 ## Screenshots
 
-### Windows VMware Environment
+### VMware Windows Environment
 
-![VMware Screen Monitor running on Windows](assets/example.png)
+![VMware Screen Monitor Windows Environment](assets/example.png)
 
-### Discord Command Output
+### Discord Bot
 
-![Discord runcmd command output](assets/example2.png)
+![VMware Screen Monitor Discord Example](assets/example2.png)
 
 ## Features
 
 - Discord bot integration
-- Windows VM monitoring
+- Windows system monitoring
 - System status reporting
 - Diagnostic command interface
-- Screenshot workflow
+- Screenshot workflow with local confirmation
 - HTTPS file downloads
 - Discord voice channel connection
 - Webhook notifications
@@ -46,19 +54,73 @@ It provides a central Discord interface for authorized lab monitoring, diagnosti
 
 | Command | Description |
 |---|---|
-| `/status` | View system monitoring information |
+| `/status` | Display system status |
 | `/runcmd` | Run supported diagnostic commands |
 | `/ss` | Start the screenshot workflow |
 | `/download` | Download a file from an HTTPS URL |
 | `/share` | Connect the bot to a voice channel |
 | `/leave` | Disconnect the bot from a voice channel |
 
-Some commands may require additional configuration or permissions.
+Command availability depends on the installed version and configuration.
+
+## Requirements
+
+- Windows 10 or later
+- Python 3.10+
+- VMware Workstation or compatible VMware environment
+- Git
+- Discord account
+- Discord bot application
+
+## Installation
+
+### 1. Clone the repository
+
+Open PowerShell or Command Prompt:
+
+```powershell
+git clone https://github.com/TomoBao/VMware-Screen-Monitor.git C:\VMLab
+```
+
+### 2. Open the project folder
+
+```powershell
+cd C:\VMLab
+```
+
+### 3. Install Python dependencies
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+### 4. Configure the project
+
+Create your local `config.py` using the example configuration.
+
+Configure the required settings:
+
+- Discord bot token
+- Webhook URL
+- Discord server ID
+- Control channel ID
+
+Never publish your actual credentials.
+
+### 5. Start the bot
+
+Make sure your terminal is inside `C:\VMLab`.
+
+Run:
+
+```powershell
+python bot.py
+```
 
 ## Project Structure
 
 ```text
-VMware-Screen-Monitor/
+C:\VMLab
 │
 ├── assets/
 │   ├── banner.png
@@ -74,88 +136,59 @@ VMware-Screen-Monitor/
 ├── monitor.py
 ├── ScreenMonitor.py
 │
+├── requirements.txt
 ├── README.md
 ├── LICENSE
-├── requirements.txt
 └── .gitignore
-```
-
-## Requirements
-
-- Windows 10 or later
-- Python 3.10 or later
-- VMware virtual machine
-- Discord account
-- Discord bot application
-
-## Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/TomoBao/VMware-Screen-Monitor.git
-```
-
-### 2. Open the project directory
-
-```bash
-cd VMware-Screen-Monitor
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configure the bot
-
-Create your local `config.py` using the example configuration.
-
-Set the required Discord bot token, webhook URL, and channel IDs.
-
-### 5. Start the bot
-
-```bash
-python bot.py
 ```
 
 ## Configuration
 
-Keep your configuration private.
+The project uses `config.py` for local configuration.
 
-Never publish:
+Keep the following information private:
 
-- Discord bot tokens
-- Webhook URLs
-- Private channel or server information
+- Discord bot token
+- Discord webhook URL
+- Private server and channel IDs
 - Other credentials
 
-Use placeholder values in any example configuration committed to GitHub.
+For public GitHub distribution, use a sanitized example configuration instead of uploading your private configuration.
 
 ## Security
 
-This project is intended for authorized VMware lab environments.
+This project is intended for authorized Windows VMware lab environments.
 
-- Only monitor systems you own or have permission to monitor.
-- Keep diagnostic operations restricted.
-- Make screenshot capture visible and require local confirmation.
+- Only monitor machines you own or have permission to access.
+- Restrict diagnostic commands to supported operations.
+- Require visible local confirmation before screenshot capture.
 - Do not automatically execute downloaded files.
-- Protect Discord credentials and webhooks.
-- Avoid exposing private information in screenshots or logs.
+- Protect Discord tokens and webhook URLs.
+- Avoid publishing private information in screenshots or logs.
 
 ## Contributing
 
-Contributions, suggestions, and bug reports are welcome!
+Contributions are welcome!
 
-Feel free to open an issue or submit a pull request.
+You can help improve VMware Screen Monitor by:
+
+- Reporting bugs through GitHub Issues.
+- Suggesting improvements.
+- Submitting pull requests.
+- Improving documentation.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+VMware Screen Monitor is licensed under the **MIT License**.
+
+See the [LICENSE](LICENSE) file for the full license text.
+
+## Repository
+
+GitHub: [TomoBao/VMware-Screen-Monitor](https://github.com/TomoBao/VMware-Screen-Monitor)
 
 ---
 
 <p align="center">
-  Made with Python by <a href="https://github.com/TomoBao">TomoBao</a>
+  Made with ❤️ and Python by <a href="https://github.com/TomoBao">TomoBao</a>
 </p>

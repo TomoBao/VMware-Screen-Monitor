@@ -43,3 +43,8 @@ $RECYCLE.BIN/
 
 # macOS files
 .DS_Store
+
+# Runtime logs
+bot.log
+bot.log.*
+*.log

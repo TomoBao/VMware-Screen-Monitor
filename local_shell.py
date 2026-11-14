@@ -1,35 +1,35 @@
 
 import subprocess
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+from logger import logger
 
-ALLOWED_COMMANDS = {
+COMMANDS = {
     "hostname": ["hostname"],
     "whoami": ["whoami"],
     "ipconfig": ["ipconfig"],
     "tasklist": ["tasklist"],
     "systeminfo": ["systeminfo"],
-    "dir": ["cmd.exe", "/c", "dir", str(BASE_DIR)],
 }
 
+
 def run_command(name):
-    if name not in ALLOWED_COMMANDS:
-        return "Command not allowed."
+    command = COMMANDS.get(name)
+
+    if command is None:
+        return "Unsupported diagnostic."
 
     try:
         result = subprocess.run(
-            ALLOWED_COMMANDS[name],
+            command,
             capture_output=True,
             text=True,
             timeout=15,
-            shell=False
+            shell=False,
+            check=False,
         )
 
-        output = result.stdout or result.stderr
-        return output[:1800] or "Command completed with no output."
+        return (result.stdout or result.stderr or "No output.")[:1800]
 
-    except subprocess.TimeoutExpired:
-        return "Command timed out."
-    except Exception as error:
-        return f"Error: {error}"
+    except Exception:
+        logger.exception("Diagnostic failed: %s", name)
+        return "Diagnostic failed. Check logs/bot.log."

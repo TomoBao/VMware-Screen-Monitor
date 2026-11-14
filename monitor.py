@@ -1,17 +1,20 @@
 
 import platform
-import psutil
 import socket
+
+import psutil
+
 
 def get_status():
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage("C:\\")
+    cpu = psutil.cpu_percent(interval=1)
 
     return (
-        f"**VM Status**\n"
+        "**VMware Screen Monitor — v1.0.2**\n"
         f"Hostname: `{socket.gethostname()}`\n"
         f"OS: `{platform.platform()}`\n"
-        f"CPU usage: `{psutil.cpu_percent(interval=1)}%`\n"
-        f"RAM usage: `{memory.percent}%`\n"
-        f"Disk usage: `{disk.percent}%`\n"
+        f"CPU: `{cpu}%`\n"
+        f"RAM: `{memory.percent}%`\n"
+        f"Disk: `{disk.percent}%`"
     )

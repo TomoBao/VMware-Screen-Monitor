@@ -3,270 +3,215 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-import requests
-import socket
-import ipaddress
-from urllib.parse import urlparse
-from pathlib import Path
-
-from config import (
-    BOT_TOKEN,
-    WEBHOOK_URL,
-    GUILD_ID,
-    CONTROL_CHANNEL_ID,
-    DOWNLOAD_DIR,
-    MAX_DOWNLOAD_SIZE,
-)
-
-from local_shell import run_command
+from config import BOT_TOKEN, GUILD_ID, CONTROL_CHANNEL_ID
+from logger import logger
 from monitor import get_status
+from local_shell import run_command
+from webhook import send_webhook_message
+
 
 GUILD = discord.Object(id=GUILD_ID)
 
 intents = discord.Intents.default()
 
-class VMLabBot(commands.Bot):
+
+class MonitorBot(commands.Bot):
     async def setup_hook(self):
-        synced = await self.tree.sync(guild=GUILD)
-        print(f"Registered {len(synced)} guild commands:")
-        for command in synced:
-            print(f" - /{command.name}")
+        commands_synced = await self.tree.sync(guild=GUILD)
+        logger.info("Registered %s slash commands", len(commands_synced))
 
-bot = VMLabBot(command_prefix="!", intents=intents)
 
-async def send_webhook_message(message):
-    if not WEBHOOK_URL or WEBHOOK_URL == "YOUR_WEBHOOK_URL":
-        return
+bot = MonitorBot(command_prefix="!", intents=intents)
 
-    try:
-        requests.post(
-            WEBHOOK_URL,
-            json={"content": message},
-            timeout=10
-        ).raise_for_status()
-    except requests.RequestException as error:
-        print(f"Webhook error: {error}")
-
-@bot.event
-async def on_ready():
-    print(f"Logged in as {bot.user}")
-    await send_webhook_message(
-        f"VM Lab bot online: `{socket.gethostname()}`"
-    )
-
-@bot.tree.command(name="status", description="Show VM status")
-@app_commands.guilds(GUILD)
-async def status(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
-
-    try:
-        await interaction.followup.send(
-            get_status(),
-            ephemeral=True
-        )
-    except Exception as error:
-        await interaction.followup.send(
-            f"Status error: `{error}`",
-            ephemeral=True
-        )
-
-@bot.tree.command(name="runcmd", description="Run a predefined diagnostic")
-@app_commands.guilds(GUILD)
-@app_commands.describe(command="Choose a predefined diagnostic")
-@app_commands.choices(command=[
+DIAGNOSTICS = [
     app_commands.Choice(name="hostname", value="hostname"),
     app_commands.Choice(name="whoami", value="whoami"),
     app_commands.Choice(name="ipconfig", value="ipconfig"),
     app_commands.Choice(name="tasklist", value="tasklist"),
     app_commands.Choice(name="systeminfo", value="systeminfo"),
-    app_commands.Choice(name="dir", value="dir"),
-])
+]
+
+
+async def check_channel(interaction):
+    allowed = (
+        interaction.guild_id == GUILD_ID
+        and interaction.channel_id == CONTROL_CHANNEL_ID
+    )
+
+    if not allowed:
+        message = "This is not the configured control channel."
+
+        if not interaction.response.is_done():
+            await interaction.response.send_message(
+                message, ephemeral=True
+            )
+
+        return False
+
+    return True
+
+
+@bot.event
+async def on_ready():
+    logger.info("Connected as %s", bot.user)
+    await send_webhook_message(
+        f"VMware Screen Monitor online: `{bot.user}`"
+    )
+
+
+# 1. STATUS
+@bot.tree.command(name="status", description="Show VM status")
+@app_commands.guilds(GUILD)
+async def status(interaction: discord.Interaction):
+    if not await check_channel(interaction):
+        return
+
+    await interaction.response.send_message(
+        get_status(), ephemeral=True
+    )
+    logger.info("Status requested")
+
+
+# 2. RUNCMD
+@bot.tree.command(
+    name="runcmd",
+    description="Run a predefined diagnostic",
+)
+@app_commands.guilds(GUILD)
+@app_commands.describe(command="Select a diagnostic")
+@app_commands.choices(command=DIAGNOSTICS)
 async def runcmd(
     interaction: discord.Interaction,
-    command: app_commands.Choice[str]
+    command: app_commands.Choice[str],
 ):
-    await interaction.response.defer(ephemeral=True)
+    if not await check_channel(interaction):
+        return
 
+    await interaction.response.defer(ephemeral=True)
     output = run_command(command.value)
 
     await interaction.followup.send(
-        f"```text\n{output[:1800]}\n```",
-        ephemeral=True
+        f"```text\n{output}\n```",
+        ephemeral=True,
     )
+    logger.info("Diagnostic requested: %s", command.value)
 
-@bot.tree.command(name="ss", description="Request a local screenshot")
+
+# 3. SS
+@bot.tree.command(
+    name="ss",
+    description="Show local screenshot instructions",
+)
 @app_commands.guilds(GUILD)
 async def ss(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+    if not await check_channel(interaction):
+        return
 
-    await interaction.followup.send(
-        "Screenshot request received.\n"
-        "Inside the VM, run `python screenmonitor.py`.\n"
-        "The local program will ask you to confirm before capturing "
-        "and uploading one screenshot.",
-        ephemeral=True
+    await interaction.response.send_message(
+        "Run `python screenmonitor.py` inside the VM. "
+        "Confirm locally to save the screenshot.",
+        ephemeral=True,
     )
+    logger.info("Screenshot instructions requested")
 
-BLOCKED_EXTENSIONS = {
-    ".exe", ".msi", ".bat", ".cmd", ".ps1", ".com",
-    ".scr", ".vbs", ".js", ".dll", ".sys", ".hta", ".reg"
-}
 
-def public_host(hostname):
-    try:
-        addresses = socket.getaddrinfo(
-            hostname, None, type=socket.SOCK_STREAM
-        )
-        return bool(addresses) and all(
-            ipaddress.ip_address(item[4][0]).is_global
-            for item in addresses
-        )
-    except (OSError, ValueError):
-        return False
-
-@bot.tree.command(name="download", description="Download a small public HTTPS file")
+# 4. DOWNLOAD
+@bot.tree.command(
+    name="download",
+    description="Show local download instructions",
+)
 @app_commands.guilds(GUILD)
-@app_commands.describe(url="HTTPS URL of the file")
-async def download(interaction: discord.Interaction, url: str):
-    await interaction.response.defer(ephemeral=True)
-
-    parsed = urlparse(url)
-
-    if parsed.scheme != "https" or not parsed.hostname:
-        await interaction.followup.send(
-            "Only HTTPS URLs are accepted.",
-            ephemeral=True
-        )
+async def download(interaction: discord.Interaction):
+    if not await check_channel(interaction):
         return
 
-    if parsed.username or parsed.password:
-        await interaction.followup.send(
-            "URLs containing credentials are not accepted.",
-            ephemeral=True
-        )
-        return
+    await interaction.response.send_message(
+        "Remote URL downloads are disabled. "
+        "Download files through your VM browser and save them "
+        "in the Downloads folder.",
+        ephemeral=True,
+    )
+    logger.info("Download instructions requested")
 
-    if not public_host(parsed.hostname):
-        await interaction.followup.send(
-            "The destination must resolve to public IP addresses.",
-            ephemeral=True
-        )
-        return
 
-    filename = Path(parsed.path).name or "download.bin"
-
-    if Path(filename).suffix.lower() in BLOCKED_EXTENSIONS:
-        await interaction.followup.send(
-            "That file type is blocked.",
-            ephemeral=True
-        )
-        return
-
-    destination = DOWNLOAD_DIR / filename
-    temporary = destination.with_suffix(destination.suffix + ".part")
-
-    try:
-        total = 0
-
-        with requests.get(
-            url,
-            stream=True,
-            timeout=20,
-            allow_redirects=False
-        ) as response:
-            response.raise_for_status()
-
-            if response.headers.get("Content-Length"):
-                if int(response.headers["Content-Length"]) > MAX_DOWNLOAD_SIZE:
-                    raise ValueError("File exceeds the size limit.")
-
-            with open(temporary, "wb") as file:
-                for chunk in response.iter_content(65536):
-                    if not chunk:
-                        continue
-
-                    total += len(chunk)
-                    if total > MAX_DOWNLOAD_SIZE:
-                        raise ValueError("File exceeds the size limit.")
-
-                    file.write(chunk)
-
-        temporary.replace(destination)
-
-        await interaction.followup.send(
-            f"Downloaded `{filename}` ({total:,} bytes).\n"
-            "The file was saved, not executed.",
-            ephemeral=True
-        )
-
-    except Exception as error:
-        temporary.unlink(missing_ok=True)
-        await interaction.followup.send(
-            f"Download failed: `{error}`",
-            ephemeral=True
-        )
-
-@bot.tree.command(name="share", description="Join your current voice channel")
+# 5. SHARE
+@bot.tree.command(
+    name="share",
+    description="Connect the bot to your voice channel",
+)
 @app_commands.guilds(GUILD)
 async def share(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
-
-    if not isinstance(interaction.user, discord.Member):
-        await interaction.followup.send(
-            "Could not identify your server membership.",
-            ephemeral=True
-        )
+    if not await check_channel(interaction):
         return
 
-    channel = interaction.user.voice.channel if interaction.user.voice else None
-
-    if channel is None:
-        await interaction.followup.send(
+    if not interaction.user.voice:
+        await interaction.response.send_message(
             "Join a voice channel first.",
-            ephemeral=True
+            ephemeral=True,
         )
         return
+
+    if interaction.guild.voice_client:
+        await interaction.response.send_message(
+            "The bot is already connected to a voice channel.",
+            ephemeral=True,
+        )
+        return
+
+    channel = interaction.user.voice.channel
+
+    await interaction.response.defer(ephemeral=True)
 
     try:
-        if interaction.guild.voice_client:
-            await interaction.guild.voice_client.move_to(channel)
-        else:
-            await channel.connect()
-
+        await channel.connect()
         await interaction.followup.send(
-            f"Connected to **{channel.name}**.",
-            ephemeral=True
+            f"Connected to **{channel.name}**. "
+            "This does not share the VM desktop.",
+            ephemeral=True,
+        )
+        logger.info("Connected to voice channel: %s", channel.id)
+
+    except Exception:
+        logger.exception("Voice connection failed")
+        await interaction.followup.send(
+            "Could not connect. Check bot voice permissions.",
+            ephemeral=True,
         )
 
-    except Exception as error:
-        await interaction.followup.send(
-            f"Voice connection failed: `{error}`",
-            ephemeral=True
-        )
 
-@bot.tree.command(name="leave", description="Disconnect from voice")
+# 6. LEAVE
+@bot.tree.command(
+    name="leave",
+    description="Disconnect the bot from voice",
+)
 @app_commands.guilds(GUILD)
 async def leave(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+    if not await check_channel(interaction):
+        return
 
-    voice = interaction.guild.voice_client if interaction.guild else None
+    voice = interaction.guild.voice_client
 
     if voice is None:
-        await interaction.followup.send(
+        await interaction.response.send_message(
             "The bot is not connected to voice.",
-            ephemeral=True
+            ephemeral=True,
         )
         return
 
     await voice.disconnect()
 
-    await interaction.followup.send(
+    await interaction.response.send_message(
         "Disconnected from voice.",
-        ephemeral=True
+        ephemeral=True,
     )
+    logger.info("Disconnected from voice")
+
 
 if __name__ == "__main__":
-    if not BOT_TOKEN or BOT_TOKEN == "YOUR_BOT_TOKEN":
-        raise RuntimeError("Set BOT_TOKEN in config.py first.")
+    if not BOT_TOKEN or not GUILD_ID or not CONTROL_CHANNEL_ID:
+        raise RuntimeError(
+            "Configure BOT_TOKEN, GUILD_ID and CONTROL_CHANNEL_ID."
+        )
 
+    logger.info("Starting VMware Screen Monitor v1.0.2")
     bot.run(BOT_TOKEN)

@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  **A Python-based Discord monitoring project for Windows VMware environments.**
+  <strong>A Python-based Discord monitoring project for Windows VMware environments.</strong>
 </p>
 
 <p align="center">
@@ -153,16 +153,20 @@ C:\VMLab
 │
 ├── bot.py
 ├── config.example.py
-├── config.py
+├── config.py (local, not tracked)
 ├── local_shell.py
+├── logger.py
 ├── monitor.py
 ├── screenmonitor.py
+├── webhook.py
 │
 ├── requirements.txt
 ├── README.md
 ├── LICENSE
 └── .gitignore
 ```
+
+**Windows compatibility note:** The repository currently contains both `ScreenMonitor.py` and `screenmonitor.py`. These names collide on case-insensitive Windows filesystems. A future cleanup will resolve this; do not assume both files can coexist in a Windows checkout.
 
 ## Configuration
 
